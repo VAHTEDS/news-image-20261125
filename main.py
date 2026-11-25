@@ -23,8 +23,8 @@ import zlib
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-W, H = 1280, 1920
-MARGIN = 76
+W, H = 683, 1024
+MARGIN = 41
 CW = W - 2 * MARGIN  # content width
 
 PAPER = (250, 247, 242)
@@ -211,9 +211,9 @@ def write_png(path, w, h, rgb):
 
 PRESETS = [
     # headline, headline_lh, summary, summary_lh, sources, chip
-    (40, 50, 29, 39, 23, 40),
-    (38, 47, 28, 37, 22, 38),
-    (36, 45, 26, 35, 21, 36),
+    (21, 27, 15, 21, 12, 21),
+    (20, 25, 15, 20, 12, 20),
+    (19, 24, 14, 19, 11, 19),
 ]
 
 
@@ -224,11 +224,11 @@ def layout_stories(font, stories, preset):
     for st in stories:
         head_lines = wrap(st["headline"], "bold", hl, CW, font)
         sum_lines = wrap(st["summary"], "regular", sm, CW, font)
-        h = chip_h + 12 + len(head_lines) * hl_lh + 8
-        h += len(sum_lines) * sm_lh + 8 + src + 4
+        h = chip_h + 6 + len(head_lines) * hl_lh + 4
+        h += len(sum_lines) * sm_lh + 4 + src + 2
         blocks.append((head_lines, sum_lines, h))
         total += h
-    total += 34 * (len(stories) - 1)  # divider + gaps between stories
+    total += 19 * (len(stories) - 1)  # divider + gaps between stories
     return blocks, total
 
 
@@ -237,25 +237,25 @@ def render(font, news):
     stories = news["stories"]
 
     # Header.
-    fill_rect(cv, MARGIN, 56, CW, 6, ACCENT)
-    y = 88
+    fill_rect(cv, MARGIN, 30, CW, 3, ACCENT)
+    y = 47
     title = "WORLD NEWS"
-    tw = font.measure(title, "bold", 84)
-    font.draw(cv, (W - tw) / 2, y + font.ascent_px(84), title, "bold", 84, INK, PAPER)
-    y += font.ascent_px(84) + 26
+    tw = font.measure(title, "bold", 45)
+    font.draw(cv, (W - tw) / 2, y + font.ascent_px(45), title, "bold", 45, INK, PAPER)
+    y += font.ascent_px(45) + 14
     date_line = "Wednesday, 25 November 2026"
-    tw = font.measure(date_line, "regular", 30)
-    font.draw(cv, (W - tw) / 2, y + font.ascent_px(30), date_line, "regular", 30, INK, PAPER)
-    y += font.ascent_px(30) + 14
+    tw = font.measure(date_line, "regular", 16)
+    font.draw(cv, (W - tw) / 2, y + font.ascent_px(16), date_line, "regular", 16, INK, PAPER)
+    y += font.ascent_px(16) + 7
     kicker = "Six stories that defined the day"
-    tw = font.measure(kicker, "regular", 28)
-    font.draw(cv, (W - tw) / 2, y + font.ascent_px(28), kicker, "regular", 28, MUTED, PAPER)
-    y += font.ascent_px(28) + 26
-    fill_rect(cv, MARGIN, y, CW, 2, HAIRLINE)
-    y += 2 + 34
+    tw = font.measure(kicker, "regular", 15)
+    font.draw(cv, (W - tw) / 2, y + font.ascent_px(15), kicker, "regular", 15, MUTED, PAPER)
+    y += font.ascent_px(15) + 14
+    fill_rect(cv, MARGIN, y, CW, 1, HAIRLINE)
+    y += 1 + 18
 
     # Stories: pick the first preset that fits above the footer.
-    footer_reserve = 120
+    footer_reserve = 64
     for preset in PRESETS:
         blocks, total = layout_stories(font, stories, preset)
         if y + total <= H - footer_reserve:
@@ -265,44 +265,44 @@ def render(font, news):
     for i, st in enumerate(stories):
         if i:
             fill_rect(cv, MARGIN, y, CW, 1, HAIRLINE)
-            y += 1 + 33
+            y += 1 + 18
         head_lines, sum_lines, _h = blocks[i]
         # Tag chip.
         tag = st["tag"]
-        tag_w = font.measure(tag, "bold", 24)
-        chip_w = int(tag_w + 32)
+        tag_w = font.measure(tag, "bold", 13)
+        chip_w = int(tag_w + 17)
         color = tuple(st["color"])
         fill_rect(cv, MARGIN, y, chip_w, chip_h, color)
         font.draw(
-            cv, MARGIN + 16, y + (chip_h + font.ascent_px(24)) // 2 - 4,
-            tag, "bold", 24, WHITE, color,
+            cv, MARGIN + 9, y + (chip_h + font.ascent_px(13)) // 2 - 2,
+            tag, "bold", 13, WHITE, color,
         )
-        y += chip_h + 12
+        y += chip_h + 6
         # Headline.
         for line in head_lines:
             font.draw(cv, MARGIN, y + font.ascent_px(hl), line, "bold", hl, INK, PAPER)
             y += hl_lh
-        y += 8
+        y += 4
         # Summary.
         for line in sum_lines:
             font.draw(cv, MARGIN, y + font.ascent_px(sm), line, "regular", sm, INK, PAPER)
             y += sm_lh
-        y += 8
+        y += 4
         # Sources.
         src_line = "Sources: " + st["sources"]
         font.draw(cv, MARGIN, y + font.ascent_px(src), src_line, "regular", src, MUTED, PAPER)
-        y += src + 4
+        y += src + 2
 
     # Footer.
-    fy = H - 108
-    fill_rect(cv, MARGIN, fy, CW, 2, HAIRLINE)
+    fy = H - 58
+    fill_rect(cv, MARGIN, fy, CW, 1, HAIRLINE)
     foot1 = "All stories verified against reporting from SCMP, Economic Times,"
     foot2 = "Qatar Tribune, The Manila Times and SBS  |  25 November 2026"
     for j, line in enumerate((foot1, foot2)):
-        tw = font.measure(line, "regular", 22)
+        tw = font.measure(line, "regular", 12)
         font.draw(
-            cv, (W - tw) / 2, fy + 18 + j * 30 + font.ascent_px(22),
-            line, "regular", 22, MUTED, PAPER,
+            cv, (W - tw) / 2, fy + 10 + j * 16 + font.ascent_px(12),
+            line, "regular", 12, MUTED, PAPER,
         )
     return cv
 
